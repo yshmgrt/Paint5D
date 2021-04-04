@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:paint5d/shapes/shape.dart';
+import 'package:paint5d/image.dart' as im;
+import 'package:paint5d/action.dart' as act;
 
 class PaintWidget extends StatefulWidget {
+  final act.Action action;
+  PaintWidget(this.action);
+
   @override
   State<StatefulWidget> createState() => PaintWidgetState();
 }
 
 class PaintWidgetState extends State<PaintWidget> {
-  List<Shape> image = [];
+  im.Image image = im.Image();
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -14,43 +20,32 @@ class PaintWidgetState extends State<PaintWidget> {
           painter: Painter(image),
         ),
         onPanDown: (d) => setState(() {
-          image.add(Shape());
+          widget.action.onPanDown(image, d);
         }),
         onPanUpdate: (d) => setState(() {
-          image[image.length - 1].points.add(d.localPosition);
+          widget.action.onPanUpdate(image, d);
+        }),
+        onPanEnd: (d) => setState(() {
+          widget.action.onPanEnd(image, d);
         }),
       );
 }
 
 class Painter extends CustomPainter {
-  List<Shape> image;
+  im.Image image;
 
-  Painter(List<Shape> image) {
+  Painter(im.Image image) {
     this.image = image;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint();
-    for (Shape s in image) {
-      for (int i = 0; i < s.points.length - 1; i++) {
-        canvas.drawLine(
-            s.points[i],
-            s.points[i + 1],
-            paint
-        );
-      }
+    Paint paint = Paint()..style=PaintingStyle.stroke;
+    for (Shape s in image.shapes) {
+      s.draw(canvas, paint);
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-class Shape {
-  List<Offset> points = [];
-
-  void addPoint(Offset p) {
-    points.add(p);
-  }
 }
