@@ -1,14 +1,16 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:paint5d/shapes/shape.dart';
 import 'package:paint5d/image.dart' as im;
 import 'package:paint5d/action.dart' as act;
+import 'package:paint5d/math_utils.dart';
 
 class Segment implements Shape {
   Offset from;
   Offset to;
 
   Segment(Offset from, Offset to) {
-
     this.from = from;
     this.to = to;
   }
@@ -20,6 +22,16 @@ class Segment implements Shape {
 
   void setTo(Offset to) {
     this.to = to;
+  }
+
+  @override
+  bool collidesWithCircle(Offset circle, double radius) =>
+      distanceToSegment(circle, Line.fromPoints(from, to)) < radius;
+
+  @override
+  Rect getBoundaries() {
+    return Rect.fromLTRB(min(from.dx, to.dx), min(from.dy, to.dy),
+        max(from.dx, to.dx), max(from.dy, to.dy));
   }
 }
 

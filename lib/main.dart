@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paint5d/action.dart' as act;
+import 'package:paint5d/erase.dart';
 import 'package:paint5d/paint_widget.dart';
 import 'package:paint5d/shapes/line.dart';
 import 'package:paint5d/shapes/rectangle.dart';
@@ -19,6 +20,7 @@ class MyAppState extends State<MyApp> {
     DrawLineAction(),
     DrawRectangleAction(),
     DrawSegmentAction(),
+    EraseAction(),
   ];
 
   act.Action currentAction = DrawLineAction();
