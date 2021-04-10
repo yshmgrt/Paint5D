@@ -1,37 +1,52 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:paint5d/shapes/shape.dart';
-import 'package:paint5d/image.dart' as im;
-import 'package:paint5d/action.dart' as act;
 import 'package:paint5d/math_utils.dart';
+import 'package:paint5d/shapes/shape.dart';
 
-class Line implements Shape {
-  List<Offset> points = [];
-  double minX = double.infinity;
-  double maxX = double.negativeInfinity;
-  double minY = double.infinity;
-  double maxY = double.negativeInfinity;
+class Line extends Shape {
+  List<Offset> _points = [];
+  double _minX = double.infinity;
+  double _maxX = double.negativeInfinity;
+  double _minY = double.infinity;
+  double _maxY = double.negativeInfinity;
+
+  final Paint paint;
+  final double _strokeWidth;
+
+  @override
+  Line.create(this.paint, Offset p) : _strokeWidth = paint.strokeWidth {
+    addPoint(p);
+  }
 
   void addPoint(Offset p) {
-    points.add(p);
-    minX = min(minX, p.dx);
-    maxX = max(minX, p.dx);
-    minY = min(minY, p.dy);
-    maxY = max(maxY, p.dy);
+    _points.add(p);
+    _minX = min(_minX, p.dx);
+    _maxX = max(_minX, p.dx);
+    _minY = min(_minY, p.dy);
+    _maxY = max(_maxY, p.dy);
   }
 
   @override
-  void draw(Canvas canvas, Paint paint) {
-    for (int i = 0; i < points.length - 1; i++) {
-      canvas.drawLine(points[i], points[i + 1], paint);
+  void draw(Canvas canvas) {
+    canvas.drawPoints(
+        PointMode.polygon, _points, paint..strokeWidth = _strokeWidth + 2);
+    for (int i = 0; i < _points.length; i++) {
+      canvas.drawCircle(
+          _points[i],
+          1,
+          paint
+            ..style = PaintingStyle.stroke
+            ..isAntiAlias = true
+            ..strokeWidth = _strokeWidth);
     }
   }
 
   @override
   bool collidesWithCircle(Offset circle, double radius) {
-    for (Offset p in points) {
-      if (distance(p, circle) <= radius) {
+    for (Offset p in _points) {
+      if (distance(p, circle) <= radius + paint.strokeWidth / 2) {
         return true;
       }
     }
@@ -40,27 +55,11 @@ class Line implements Shape {
 
   @override
   Rect getBoundaries() {
-    return Rect.fromLTRB(minX, minY, maxX, maxY);
-  }
-}
-
-class DrawLineAction implements act.Action {
-  @override
-  final act.ActionData data = act.ActionData("Draw line", Icons.edit);
-
-  @override
-  void onPanDown(im.Image image, DragDownDetails details) {
-    image.addShape(Line());
+    return Rect.fromLTRB(_minX, _minY, _maxX, _maxY).inflate(paint.strokeWidth);
   }
 
   @override
-  void onPanEnd(im.Image image, DragEndDetails details) {}
-
-  @override
-  void onPanUpdate(im.Image image, DragUpdateDetails details) {
-    Shape last = image.getLastShape();
-    if (last is Line) {
-      last.addPoint(details.localPosition);
-    }
+  void update(Offset p) {
+    addPoint(p);
   }
 }

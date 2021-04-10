@@ -1,57 +1,38 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:paint5d/shapes/shape.dart';
-import 'package:paint5d/image.dart' as im;
-import 'package:paint5d/action.dart' as act;
 import 'package:paint5d/math_utils.dart';
+import 'package:paint5d/shapes/shape.dart';
 
-class Segment implements Shape {
-  Offset from;
-  Offset to;
+class Segment extends Shape {
+  Offset _from;
+  Offset _to;
+  final Paint paint;
 
-  Segment(Offset from, Offset to) {
-    this.from = from;
-    this.to = to;
+  @override
+  Segment.create(this.paint, Offset p) {
+    _from = _to = p;
   }
 
   @override
-  void draw(Canvas canvas, Paint paint) {
-    canvas.drawLine(from, to, paint);
-  }
-
-  void setTo(Offset to) {
-    this.to = to;
+  void draw(Canvas canvas) {
+    canvas.drawLine(_from, _to, paint);
   }
 
   @override
   bool collidesWithCircle(Offset circle, double radius) =>
-      distanceToSegment(circle, Line.fromPoints(from, to)) < radius;
+      distanceToSegment(circle, Line.fromPoints(_from, _to)) <
+      radius + paint.strokeWidth / 2;
 
   @override
   Rect getBoundaries() {
-    return Rect.fromLTRB(min(from.dx, to.dx), min(from.dy, to.dy),
-        max(from.dx, to.dx), max(from.dy, to.dy));
-  }
-}
-
-class DrawSegmentAction implements act.Action {
-  @override
-  final act.ActionData data = act.ActionData("Draw segment", Icons.minimize);
-
-  @override
-  void onPanDown(im.Image image, DragDownDetails details) {
-    image.addShape(Segment(details.localPosition, details.localPosition));
+    return Rect.fromLTRB(min(_from.dx, _to.dx), min(_from.dy, _to.dy),
+            max(_from.dx, _to.dx), max(_from.dy, _to.dy))
+        .inflate(paint.strokeWidth / 2);
   }
 
   @override
-  void onPanEnd(im.Image image, DragEndDetails details) {}
-
-  @override
-  void onPanUpdate(im.Image image, DragUpdateDetails details) {
-    Shape last = image.getLastShape();
-    if (last is Segment) {
-      last.setTo(details.localPosition);
-    }
+  void update(Offset p) {
+    _to = p;
   }
 }
