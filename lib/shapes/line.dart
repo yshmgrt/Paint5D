@@ -1,16 +1,14 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:paint5d/math_utils.dart';
+import 'package:flutter/rendering.dart';
 import 'package:paint5d/shapes/shape.dart';
+import 'package:paint5d/utils/json_extensions.dart';
+import 'package:paint5d/utils/math_utils.dart';
 
 class Line extends Shape {
   List<Offset> _points = [];
-  double _minX = double.infinity;
-  double _maxX = double.negativeInfinity;
-  double _minY = double.infinity;
-  double _maxY = double.negativeInfinity;
+  Rect _bound;
 
   final Paint paint;
   final double _strokeWidth;
@@ -18,14 +16,17 @@ class Line extends Shape {
   @override
   Line.create(this.paint, Offset p) : _strokeWidth = paint.strokeWidth {
     addPoint(p);
+    _bound = Rect.fromCenter(center: p, width: 0, height: 0);
   }
 
   void addPoint(Offset p) {
     _points.add(p);
-    _minX = min(_minX, p.dx);
-    _maxX = max(_minX, p.dx);
-    _minY = min(_minY, p.dy);
-    _maxY = max(_maxY, p.dy);
+    Rect pointRect = Rect.fromCenter(center: p, width: 0, height: 0);
+    if (_bound == null) {
+      _bound = pointRect;
+    } else {
+      _bound = _bound.expandToInclude(pointRect);
+    }
   }
 
   @override
@@ -55,11 +56,30 @@ class Line extends Shape {
 
   @override
   Rect getBoundaries() {
-    return Rect.fromLTRB(_minX, _minY, _maxX, _maxY).inflate(paint.strokeWidth);
+    return _bound.inflate(paint.strokeWidth);
   }
 
   @override
   void update(Offset p) {
     addPoint(p);
   }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "Line",
+        "paint": paint.toJson(),
+        "data": _points.map((e) => e.toJson()).toList(),
+        "tl": _bound.topLeft.toJson(),
+        "br": _bound.bottomRight.toJson(),
+      };
+
+  Line.fromJson(Map<String, dynamic> map)
+      : paint = JsonablePaint.fromJson(map["paint"])
+          ..style = PaintingStyle.stroke,
+        _strokeWidth = JsonablePaint.fromJson(map["paint"]).strokeWidth,
+        _points = (map["data"] as List<dynamic>)
+            .map((e) => JsonableOffset.fromJson(e))
+            .toList(),
+        _bound = Rect.fromPoints(JsonableOffset.fromJson(map["tl"]),
+            JsonableOffset.fromJson(map["br"]));
 }

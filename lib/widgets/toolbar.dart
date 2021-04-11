@@ -21,7 +21,7 @@ class Toolbar extends StatelessWidget {
                       new act.ActionData("Open color picker", Icons.color_lens),
                   onPressed: () => provider.toggleColorPanelOpened(),
                   isSelected: provider.isColorPanelOpened,
-                )
+                ),
               ],
             ),
           ));

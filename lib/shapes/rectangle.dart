@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:paint5d/math_utils.dart';
 import 'package:paint5d/shapes/shape.dart';
+import 'package:paint5d/utils/json_extensions.dart';
 
 class Rectangle extends Shape {
   Offset _topLeft;
@@ -26,18 +26,8 @@ class Rectangle extends Shape {
 
   @override
   bool collidesWithCircle(Offset circle, double radius) {
-    var a = _topLeft;
-    var b = Offset(_topLeft.dx, _bottomRight.dy);
-    var c = _bottomRight;
-    var d = Offset(_bottomRight.dx, _topLeft.dy);
-    var ab = Line.fromPoints(a, b);
-    var bc = Line.fromPoints(b, c);
-    var cd = Line.fromPoints(c, d);
-    var da = Line.fromPoints(d, a);
-    return distanceToSegment(circle, ab) < radius + paint.strokeWidth / 2 ||
-        distanceToSegment(circle, bc) < radius + paint.strokeWidth / 2 ||
-        distanceToSegment(circle, cd) < radius + paint.strokeWidth / 2 ||
-        distanceToSegment(circle, da) < radius + paint.strokeWidth / 2;
+    return getBoundaries().contains(circle) &&
+        !getBoundaries().deflate(paint.strokeWidth).contains(circle);
   }
 
   @override
@@ -54,4 +44,18 @@ class Rectangle extends Shape {
   void update(Offset p) {
     _bottomRight = p;
   }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "Rectangle",
+        "paint": paint.toJson(),
+        "tl": _topLeft.toJson(),
+        "br": _bottomRight.toJson(),
+      };
+
+  Rectangle.fromJson(Map<String, dynamic> map)
+      : paint = JsonablePaint.fromJson(map["paint"])
+          ..style = PaintingStyle.stroke,
+        _topLeft = JsonableOffset.fromJson(map["tl"]),
+        _bottomRight = JsonableOffset.fromJson(map["br"]);
 }

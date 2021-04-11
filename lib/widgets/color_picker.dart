@@ -107,8 +107,8 @@ class PaintPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        height: 150,
-        width: 150,
+        height: 50,
+        width: 75,
         child: CustomPaint(
           painter: PaintPreviewPainter(paint),
         ),
@@ -124,7 +124,7 @@ class PaintPreviewPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Offset center = size.center(Offset.zero);
     canvas.drawCircle(
-        center, _paint.strokeWidth, _paint..style = PaintingStyle.fill);
+        center, 25, _paint..style = PaintingStyle.fill);
   }
 
   @override

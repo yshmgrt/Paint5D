@@ -1,8 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:paint5d/math_utils.dart';
 import 'package:paint5d/shapes/shape.dart';
+import 'package:paint5d/utils/json_extensions.dart';
+import 'package:paint5d/utils/math_utils.dart';
 
 class Segment extends Shape {
   Offset _from;
@@ -35,4 +36,17 @@ class Segment extends Shape {
   void update(Offset p) {
     _to = p;
   }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "Segment",
+        "paint": paint.toJson(),
+        "from": _from.toJson(),
+        "to": _to.toJson(),
+      };
+
+  Segment.fromJson(Map<String, dynamic> map)
+      : paint = JsonablePaint.fromJson(map["paint"]),
+        _from = JsonableOffset.fromJson(map["from"]),
+        _to = JsonableOffset.fromJson(map["to"]);
 }

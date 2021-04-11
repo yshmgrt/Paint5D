@@ -40,6 +40,7 @@ class Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.drawPaint(Paint()..color=Colors.white);
     for (Shape s in image.shapes) {
       s.draw(canvas);
     }
